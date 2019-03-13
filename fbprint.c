@@ -8,6 +8,7 @@
 #include <sys/ioctl.h>
 #include <stdint.h>
 #include "icon.h"
+#include "bitmap.h"
 #include <string.h>
 
 typedef struct window_t {
@@ -25,24 +26,18 @@ int main(int argc, char *argv[])
     long int screensize = 0;
     char *fbp = 0;
     int x = 0, y = 0;
-    short unsigned int cycle = 0;
     long int location = 0;
 
-    uint8_t i = 0;
+    uint32_t i = 0;
 
-    int xpos = 0;
-    int ypos = 0;
-    int radius = 0;
-    unsigned char step = 0;
-    short unsigned int count = 0;
+    uint8_t header[200];
+    uint8_t buffer[4];
+    uint8_t color;
 
-    uint8_t color = 0;
+    uint8_t icon = 0;
 
     window_t window;
-    window.x = 900;
-    window.y = 300;
-    window.width = 64;
-    window.height = 64;
+    bitmap_t bitmap;
 
     // Open the file for reading and writing
     fbfd = open("/dev/fb0", O_RDWR);
@@ -64,6 +59,7 @@ int main(int argc, char *argv[])
         exit(3);
     }
 
+    // Get arguments
     for(i=1; i<argc; i++) {
         if(!strcmp(argv[i], "color")) {
             color = atoi(argv[++i]);
@@ -71,8 +67,12 @@ int main(int argc, char *argv[])
             window.x = atoi(argv[++i]);
         } else if(!strcmp(argv[i], "y")) {
             window.y = atoi(argv[++i]);
+        } else if(!strcmp(argv[i], "img")) {
+            strcpy(header, argv[++i]);
+        } else if(!strcmp(argv[i], "icon")) {
+            icon = 1;
+            i++;
         }
-        printf("%s\n", argv[i]);
     }
 
     printf("%dx%d, %dbpp\n", vinfo.xres, vinfo.yres, vinfo.bits_per_pixel);
@@ -88,53 +88,103 @@ int main(int argc, char *argv[])
     }
     printf("The framebuffer device was mapped to memory successfully.\n");
 
-
-
-    unsigned int mem[200][200];
-
     // Save current fb slice on memory
-    for (y = 0; y < window.height; y++) {
-        for (x = 0; x < window.width; x++) {
-            location = (x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
-                       (y+vinfo.yoffset+window.y) * finfo.line_length;
-            mem[x][y] = *((unsigned int *)(fbp + location)) & 0xFFFFFFFF;
-        }
-    }
+    // unsigned int mem[200][200];
+    // for (y = 0; y < window.height; y++) {
+    //     for (x = 0; x < window.width; x++) {
+    //         location = (x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
+    //                    (y+vinfo.yoffset+window.y) * finfo.line_length;
+    //         mem[x][y] = *((unsigned int *)(fbp + location)) & 0xFFFFFFFF;
+    //     }
+    // }
 
-    for (y = 0; y < window.height; y++) {
-        for (x = 0; x < window.width; x++) {
+    if (icon) {
 
-            location = (x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
-                       (y+vinfo.yoffset+window.y) * finfo.line_length;
+        window.width = 64;
+        window.height = 64;
 
-            if (vinfo.bits_per_pixel == 32) {
-                if (save_logo[x][y/8] & 1<<(y%8)) {
-                    if (x==0 || x==63 || y==0 || y==63 ||
-                        !(save_logo[x-1][y/8] & 1<<(y%8)) || !(save_logo[x+1][y/8] & 1<<(y%8)) ||
-                        !(save_logo[x][(y-1)/8] & 1<<((y-1)%8)) || !(save_logo[x+1][(y+1)/8] & 1<<((y+1)%8))) {
-                        *(fbp + location) = color;        // Some blue
-                        *(fbp + location + 1) = 0x00;     // A little green
-                        *(fbp + location + 2) = 0x00;    // A lot of red
-                        *(fbp + location + 3) = 0x00;      // No transparency
-                    } else {
-                        *(fbp + location) = color;        // Some blue
-                        *(fbp + location + 1) = x + y;     // A little green
-                        *(fbp + location + 2) = y;    // A lot of red
-                        *(fbp + location + 3) = 0x00;      // No transparency
+        for (y = 0; y < window.height; y++) {
+            for (x = 0; x < window.width; x++) {
+
+                location = (x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
+                           (y+vinfo.yoffset+window.y) * finfo.line_length;
+
+                if (vinfo.bits_per_pixel == 32) {
+                    if (save_logo[x][y/8] & 1<<(y%8)) {
+                        if (x==0 || x==63 || y==0 || y==63 ||
+                            !(save_logo[x-1][y/8] & 1<<(y%8)) || !(save_logo[x+1][y/8] & 1<<(y%8)) ||
+                            !(save_logo[x][(y-1)/8] & 1<<((y-1)%8)) || !(save_logo[x+1][(y+1)/8] & 1<<((y+1)%8))) {
+                            *(fbp + location) = color;      // Blue
+                            *(fbp + location + 1) = 0x00;   // Green
+                            *(fbp + location + 2) = 0x00;   // Red
+                            *(fbp + location + 3) = 0x00;   // Alpha
+                        } else {
+                            *(fbp + location) = color;      // Blue
+                            *(fbp + location + 1) = x + y;  // Green
+                            *(fbp + location + 2) = y;      // Red
+                            *(fbp + location + 3) = 0x00;   // Alpha
+                        }
                     }
-                }
-            } else {
-                if (save_logo[x][y/8] & 1<<(y%8)) {
-                    if (x==0 || x==63 || y==0 || y==63 ||
-                        !(save_logo[x-1][y/8] & 1<<(y%8)) || !(save_logo[x+1][y/8] & 1<<(y%8)) ||
-                        !(save_logo[x][(y-1)/8] & 1<<((y-1)%8)) || !(save_logo[x+1][(y+1)/8] & 1<<((y+1)%8))) {
-                        *((unsigned short int*)(fbp + location)) = 0x10FF;
-                    } else {
-                        *((unsigned short int*)(fbp + location)) = 0xFFFF;
+                } else {
+                    if (save_logo[x][y/8] & 1<<(y%8)) {
+                        if (x==0 || x==63 || y==0 || y==63 ||
+                            !(save_logo[x-1][y/8] & 1<<(y%8)) || !(save_logo[x+1][y/8] & 1<<(y%8)) ||
+                            !(save_logo[x][(y-1)/8] & 1<<((y-1)%8)) || !(save_logo[x+1][(y+1)/8] & 1<<((y+1)%8))) {
+                            *((unsigned short int*)(fbp + location)) = 0x10FF;
+                        } else {
+                            *((unsigned short int*)(fbp + location)) = 0xFFFF;
+                        }
                     }
                 }
             }
         }
+
+    } else {
+
+        FILE *img = fopen(header, "rb");
+        fread(header, 0x34, 1, img);
+        get_bitmap_info(header, &bitmap);
+
+        window.width = bitmap.width;
+        window.height = bitmap.height;
+
+        printf("Bitmap pixels: %d x %d\n", bitmap.width, bitmap.height);
+        printf("BPP: %d\n", bitmap.bitcount);
+
+        uint8_t step = bitmap.bitcount / 8;
+        fseek(img, bitmap.offset, SEEK_SET);
+
+        for (y = window.height-1; y >= 0 ; y--) {
+            for (x = 0; x < window.width; x++) {
+
+                fread(buffer, step, 1, img);
+
+                location = (x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
+                           (y+vinfo.yoffset+window.y) * finfo.line_length;
+
+                i = 0;
+
+                if (bitmap.bitcount == 32) {
+                    *(fbp + location + 3) = buffer[i++];
+                    *(fbp + location + 0) = buffer[i++];   // Blue
+                    *(fbp + location + 1) = buffer[i++];   // Red
+                    *(fbp + location + 2) = buffer[i++];   // Green
+                } else if (bitmap.bitcount == 24) {
+                    *(fbp + location + 0) = buffer[i++];   // Blue
+                    *(fbp + location + 1) = buffer[i++];   // Red
+                    *(fbp + location + 2) = buffer[i++];   // Green
+                } else if (bitmap.bitcount == 16) {
+                    *(fbp + location + 0) = ((*(uint16_t *)(&buffer[i])) & 0x001F) << 3;   // Blue
+                    *(fbp + location + 1) = ((*(uint16_t *)(&buffer[i])) & 0x07E0) >> 3;   // Red
+                    *(fbp + location + 2) = ((*(uint16_t *)(&buffer[i])) & 0xF800) >> 8;   // Green
+                }
+
+                // printf("Pixel: %d:%d\n", x, y);
+            }
+        }
+
+        fclose(img);
+
     }
 
     munmap(fbp, screensize);

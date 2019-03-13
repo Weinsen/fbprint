@@ -1,4 +1,4 @@
-# FRPrint
+# FBPrint
 
 Print images directly to the frame buffer.
 
