@@ -8,16 +8,16 @@ Image is save icon from header.
 
 ## ToDo
 
-Read image from file;
-Read bmp;
+  Read bmp;
+  Read gif;
 
 ## Compilation
 
 Compile using:
 
 ```
-gcc fbprint.c -o fbprint -lm
-./fbprint
+gcc *.c -o fbprint -lm
+./fbprint [args]
 ```
 
 To run, use the tty1 (Ctrl + Alt + F1 on most Linux).
@@ -25,8 +25,12 @@ To run, use the tty1 (Ctrl + Alt + F1 on most Linux).
 
 ## Options
 
-Color
+**Option** | **Value** | **Description**
+--- | --- | ---
+color | unsigned char | Color applied to icons
+x | integer | X position on screen of left-top corner of image
+y | integer | Y position on screen of left-top corner of image
 
-X
-
-Y
+**Flags** | **Description**
+--- | ---
+icon | Use icon
