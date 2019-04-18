@@ -26,10 +26,10 @@ int main(int argc, char *argv[])
 
     // Get arguments
     for(i=1; i<argc; i++) {
-        if(!strcmp(argv[i], "--img") || !strcmp(argv[i], "-i")) {
-            strcpy(header, argv[++i]);
-        } else if(!strcmp(argv[i], "-t")) {
+        if(!strcmp(argv[i], "-t")) {
             threshhold = atoi(argv[++i]);
+        } else {
+            strcpy(header, argv[i]);
         }
     }
 

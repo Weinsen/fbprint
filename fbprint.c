@@ -12,7 +12,11 @@
 #include "fbprint.h"
 #include <string.h>
 
-
+icon_t icon_list[] = {
+    INCLUDE_ICON(save_logo),
+    INCLUDE_ICON(ethernet),
+    INCLUDE_ICON(nfc_logo)
+};
 
 int main(int argc, char *argv[])
 {
@@ -90,20 +94,17 @@ int main(int argc, char *argv[])
         } else if(!strcmp(argv[i], "-f") ) {
             strcpy(header, argv[++i]);
         } else if(!strcmp(argv[i], "-i")) {
-            strcpy(header, argv[++i]);
+            // strcpy(header, argv[++i]);
+            i++;
+            for (x=0; x<(sizeof(icon_list)/sizeof(icon_t)); x++) {
+                if (!strcmp(argv[i], icon_list[x].name)) {
+                    icon_image = icon_list[x].img;
+                    break;
+                }
+            }
             options.icon = 1;
-        }
-    }
-
-    if (options.icon) {
-        if (!strcmp(header, "save")) {
-            icon_image = save_logo;
-        } else if (!strcmp(header, "nfc")) {
-            icon_image = nfc_logo;
-        } else if (!strcmp(header, "link")) {
-            icon_image = ethernet;
-        } else if (!strcmp(header, "img")) {
-            icon_image = IMG;
+        } else if(!strcmp(argv[i], "-v")) {
+            printf("Version: %s\r\n", FBP_VERSION);
         }
     }
 

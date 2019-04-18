@@ -1,6 +1,8 @@
 #ifndef fbprint_h
 #define fbprint_h
 
+#define FBP_VERSION "0.2.1"
+
 #define CHECK_X_BONDARIES if (x + window.x >= vinfo.xres || x + window.x < 0) { continue; }
 #define CHECK_Y_BONDARIES if (y + window.y >= vinfo.yres || y + window.y < 0) { continue; }
 

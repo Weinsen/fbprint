@@ -19,8 +19,7 @@ Print images directly to the frame buffer.
 Compile using:
 
 ```
-$ gcc *.c -o fbprint -lm -I ./
-$ ./fbprint [args]
+make
 ```
 
 To run, use the tty1 (Ctrl + Alt + F1 on most Linux).
@@ -49,6 +48,5 @@ To run, use the tty1 (Ctrl + Alt + F1 on most Linux).
 Generate a header file containing the converted image. Copy and paste the contents of output.h to your header.
 
 ```
-$ gcc bmp2header.c bitmap.c -I ./ -lm -o bmp2header;
-$ ./bmp2header -t [threshhold] -i [bitmap]
+$ make bmp2header
 ```
