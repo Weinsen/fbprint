@@ -34,14 +34,13 @@ To run, use the tty1 (Ctrl + Alt + F1 on most Linux).
 -c | unsigned char | Color applied to icons
 -x | integer | X position on screen of left-top corner of image
 -y | integer | Y position on screen of left-top corner of image
--I | --- | Flag to invert filling
--B | --- | Border only
--i | Bitmap file | Path to bitmap file
+-f | Bitmap file | Path to bitmap file
 --icon | String | Name of icon to use
 
 **Flags** | **Description**
 --- | ---
-icon | Use icon
+-I | Invert filling
+-B | Border only
 
 ## Utils
 
@@ -50,6 +49,6 @@ icon | Use icon
 Generate a header file containing the converted image. Copy and paste the contents of output.h to your header.
 
 ```
-$ gcc bmp2header.c bitmap.c -I ./ -lm -o bmp2header; 
+$ gcc bmp2header.c bitmap.c -I ./ -lm -o bmp2header;
 $ ./bmp2header -t [threshhold] -i [bitmap]
 ```

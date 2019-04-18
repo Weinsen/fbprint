@@ -9,64 +9,45 @@
 #include <stdint.h>
 #include "icon.h"
 #include "bitmap.h"
+#include "fbprint.h"
 #include <string.h>
 
-typedef struct window_t {
-    unsigned int x;
-    unsigned int y;
-    unsigned int height;
-    unsigned int width;
-} window_t;
 
-typedef union color_t {
-    uint32_t pixel;
-    uint8_t rgb[4];
-} color_t;
-
-typedef struct option_t {
-    uint8_t invert;
-    uint8_t border;
-} option_t;
 
 int main(int argc, char *argv[])
 {
-    int fbfd = 0;
     struct fb_var_screeninfo vinfo;
     struct fb_fix_screeninfo finfo;
-    long int screensize = 0;
-    char *fbp = 0;
-    int x = 0, y = 0;
-    long int location = 0;
 
+    int x = 0, y = 0;
     uint32_t i = 0;
 
     uint8_t header[200];
-    uint8_t buffer[4];
-    color_t color;
 
-    option_t options = {
-        .invert = 0,
-        .border = 0
-    };
-
-    uint8_t icon = 0;
     const uint8_t *icon_image = save_logo;
 
+    color_t color;
+    option_t options = {
+        .invert = 0,
+        .border = 0,
+        .icon = 0
+    };
+
+    bitmap_t bitmap;
     window_t window = {
         .x = 0,
         .y = 0,
         .width = 64,
         .height = 64
     };
-    bitmap_t bitmap;
 
     // Open the file for reading and writing
-    fbfd = open("/dev/fb0", O_RDWR);
+    int fbfd = open("/dev/fb0", O_RDWR);
     if (fbfd == -1) {
-        perror("Error: cannot open framebuffer device");
+        perror("Error: cannot open framecolor.rgb device");
         exit(1);
     }
-    // printf("The framebuffer device was opened successfully.\n");
+    // printf("The framecolor.rgb device was opened successfully.\n");
 
     // Get fixed screen information
     if (ioctl(fbfd, FBIOGET_FSCREENINFO, &finfo) == -1) {
@@ -80,20 +61,24 @@ int main(int argc, char *argv[])
         exit(3);
     }
 
-    screensize = finfo.smem_len;
+    long int screensize = finfo.smem_len;
 
     // Map the device to memory
-    fbp = (char *)mmap(0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, 0);
+    char *fbp = (char *)mmap(0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, 0);
     if ((int)fbp == -1) {
-        perror("Error: failed to map framebuffer device to memory");
+        perror("Error: failed to map framecolor.rgb device to memory");
         exit(4);
     }
-    // printf("The framebuffer device was mapped to memory successfully.\n");
+    // printf("The framecolor.rgb device was mapped to memory successfully.\n");
 
     // Get arguments
     for(i=1; i<argc; i++) {
-        if(!strcmp(argv[i], "--color") || !strcmp(argv[i], "-c")) {
+        if(!strcmp(argv[i], "-c")) {
             color.pixel = (uint32_t)strtol(argv[++i], NULL, 16);
+            if (vinfo.bits_per_pixel == 16) {
+                x=1;
+                color.pix16[0] = ((color.rgb[x++] >> 3) << 0 ) | ((color.rgb[x++] >> 3) << 11 ) | ((color.rgb[x++] >> 2) << 5 );
+            }
         } else if(!strcmp(argv[i], "-x")) {
             window.x = atoi(argv[++i]);
         } else if(!strcmp(argv[i], "-y")) {
@@ -102,15 +87,15 @@ int main(int argc, char *argv[])
             options.invert = 1;
         } else if(!strcmp(argv[i], "-B")) {
             options.border = 1;
-        } else if(!strcmp(argv[i], "--img") || !strcmp(argv[i], "-i") ) {
+        } else if(!strcmp(argv[i], "-f") ) {
             strcpy(header, argv[++i]);
-        } else if(!strcmp(argv[i], "--icon")) {
+        } else if(!strcmp(argv[i], "-i")) {
             strcpy(header, argv[++i]);
-            icon = 1;
+            options.icon = 1;
         }
     }
 
-    if (icon) {
+    if (options.icon) {
         if (!strcmp(header, "save")) {
             icon_image = save_logo;
         } else if (!strcmp(header, "nfc")) {
@@ -136,66 +121,49 @@ int main(int argc, char *argv[])
     //
     //
 
-    if (icon) {
+    if (options.icon) {
 
         uint32_t index = 0;
-
-        i = 0;
-
-        // const uint8_t *icon_image = IMG;
 
         window.height = (icon_image[index++] << 8) | icon_image[index++];
         window.width = (icon_image[index++] << 8) | icon_image[index++];
 
         x = 0;
         y = 0;
+        i = 0;
 
-        long int max_location = (vinfo.xres+vinfo.xoffset+window.x-1) * (vinfo.bits_per_pixel/8) +
-                                (vinfo.yres+vinfo.yoffset+window.y-1) * finfo.line_length;
+        long int location = 0;
 
+        for (x = 0; x < window.width; x++) {
 
-        while(i < window.width * window.height) {
+            CHECK_X_BONDARIES;
 
-            location = (x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
-                       (y+vinfo.yoffset+window.y) * finfo.line_length;
+            for (y = 0; y < window.height; y++) {
 
-            if ( x + window.x < vinfo.xres && y + window.y < vinfo.yres && x + window.x > 0 && y + window.y > 0) {
+                location = (x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
+                           (y+vinfo.yoffset+window.y) * finfo.line_length;
+
+                CHECK_Y_BONDARIES;
+
                 if ( (icon_image[y/8 + (window.height/8)*x + index] & 1<<(y%8)) > 0 ^ options.invert ) {
                     if (vinfo.bits_per_pixel == 32) {
                         if (options.border) {
-                            // if (x==0 || x==63 || y==0 || y==63 ||
-                            //     !(icon_image[x-1][y/8] & 1<<(y%8)) || !(icon_image[x+1][y/8] & 1<<(y%8)) ||
-                            //     !(icon_image[x][(y-1)/8] & 1<<((y-1)%8)) || !(icon_image[x+1][(y+1)/8] & 1<<((y+1)%8))) {
-                            //     *(fbp + location + 0) = color.rgb[0] ^ 0x80;   // Blue
-                            //     *(fbp + location + 1) = color.rgb[1] ^ 0x80;   // Green
-                            //     *(fbp + location + 2) = color.rgb[2] ^ 0x80;   // Red
-                            //     *(fbp + location + 3) = 0x00;   // Alpha
-                            // }
+                            if (IS_BORDER)
+                                *(uint32_t *)(fbp + location) = color.pixel;
                         } else {
-                            *(fbp + location + 0) = color.rgb[0];   // Blue
-                            *(fbp + location + 1) = color.rgb[1];   // Green
-                            *(fbp + location + 2) = color.rgb[2];   // Red
-                            *(fbp + location + 3) = 0x00;   // Alpha
+                            *(uint32_t *)(fbp + location) = color.pixel;
                         }
                     } else {
                         if (options.border) {
-                            // if (x==0 || x==63 || y==0 || y==63 ||
-                            //     !(icon_image[x-1][y/8] & 1<<(y%8)) || !(icon_image[x+1][y/8] & 1<<(y%8)) ||
-                            //     !(icon_image[x][(y-1)/8] & 1<<((y-1)%8)) || !(icon_image[x+1][(y+1)/8] & 1<<((y+1)%8))) {
-                            //     *((unsigned short int*)(fbp + location)) = color.pixel ^ 0x8410;
-                            // }
+                            if (IS_BORDER) {
+                                *(uint16_t *)(fbp + location) = color.pixel;
+                            }
                         } else {
-                            *((unsigned short int*)(fbp + location)) = color.pixel;
+                            *(uint16_t *)(fbp + location) = color.pixel;
                         }
                     }
                 }
-            }
-
-            y++;
-            i++;
-            if (y >= window.height) {
-                y = 0;
-                x++;
+                i++;
             }
         }
 
@@ -205,10 +173,10 @@ int main(int argc, char *argv[])
         fread(header, 0x34, 1, img);
         get_bitmap_info(header, &bitmap);
 
+        long int location = 0;
+
         window.width = bitmap.width;
         window.height = bitmap.height;
-
-        // printf("Bitmap pixels: %d x %d\n", s);
 
         fseek(img, bitmap.offset, SEEK_SET);
 
@@ -216,9 +184,14 @@ int main(int argc, char *argv[])
 
         if (vinfo.bits_per_pixel == 32) {
             for (y = window.height-1; y >= 0 ; y--) {
+
+                CHECK_Y_BONDARIES;
+
                 for (x = 0; x < window.width; x++) {
 
-                    fread(buffer, step, 1, img);
+                    CHECK_X_BONDARIES;
+
+                    fread(color.rgb, step, 1, img);
 
                     location = (x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
                                (y+vinfo.yoffset+window.y) * finfo.line_length;
@@ -226,19 +199,19 @@ int main(int argc, char *argv[])
                     i = 0;
 
                     if (bitmap.bitcount == 32) {
-                        *(fbp + location + 3) = buffer[i++];
-                        *(fbp + location + 0) = buffer[i++];   // Blue
-                        *(fbp + location + 1) = buffer[i++];   // Red
-                        *(fbp + location + 2) = buffer[i++];   // Green
+                        *(fbp + location + 3) = color.rgb[i++];
+                        *(fbp + location + 0) = color.rgb[i++];   // Blue
+                        *(fbp + location + 1) = color.rgb[i++];   // Red
+                        *(fbp + location + 2) = color.rgb[i++];   // Green
                     } else if (bitmap.bitcount == 24) {
-                        *(fbp + location + 0) = buffer[i++];   // Blue
-                        *(fbp + location + 1) = buffer[i++];   // Red
-                        *(fbp + location + 2) = buffer[i++];   // Green
+                        *(fbp + location + 0) = color.rgb[i++];   // Blue
+                        *(fbp + location + 1) = color.rgb[i++];   // Red
+                        *(fbp + location + 2) = color.rgb[i++];   // Green
                         *(fbp + location + 3) = 0x00;
                     } else if (bitmap.bitcount == 16) {
-                        *(fbp + location + 0) = ((*(uint16_t *)(&buffer[i])) & 0x001F) << 3;   // Blue
-                        *(fbp + location + 1) = ((*(uint16_t *)(&buffer[i])) & 0x07E0) >> 3;   // Red
-                        *(fbp + location + 2) = ((*(uint16_t *)(&buffer[i])) & 0xF800) >> 8;   // Green
+                        *(fbp + location + 0) = ((*(uint16_t *)(&color.rgb[i])) & 0x001F) << 3;   // Blue
+                        *(fbp + location + 1) = ((*(uint16_t *)(&color.rgb[i])) & 0x07E0) >> 3;   // Red
+                        *(fbp + location + 2) = ((*(uint16_t *)(&color.rgb[i])) & 0xF800) >> 8;   // Green
                         *(fbp + location + 3) = 0x00;   // Green
                     }
 
@@ -247,9 +220,14 @@ int main(int argc, char *argv[])
 
         } else {
             for (y = window.height-1; y >= 0 ; y--) {
+
+                CHECK_Y_BONDARIES;
+
                 for (x = 0; x < window.width; x++) {
 
-                    fread(buffer, step, 1, img);
+                    CHECK_X_BONDARIES;
+
+                    fread(color.rgb, step, 1, img);
 
                     location = (x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
                                (y+vinfo.yoffset+window.y) * finfo.line_length;
@@ -257,11 +235,11 @@ int main(int argc, char *argv[])
                     i = 1;
 
                     if (bitmap.bitcount == 32) {
-                        *((uint16_t*)(fbp + location)) = ((buffer[i++] >> 3) << 0 ) | ((buffer[i++] >> 3) << 11 ) | ((buffer[i++] >> 2) << 5 );
+                        *((uint16_t*)(fbp + location)) = ((color.rgb[i++] >> 3) << 0 ) | ((color.rgb[i++] >> 3) << 11 ) | ((color.rgb[i++] >> 2) << 5 );
                     } else if (bitmap.bitcount == 24) {
-                        *((uint16_t*)(fbp + location)) = ((buffer[i++] >> 3) << 0 ) | ((buffer[i++] >> 3) << 11 ) | ((buffer[i++] >> 2) << 5 );
+                        *((uint16_t*)(fbp + location)) = ((color.rgb[i++] >> 3) << 0 ) | ((color.rgb[i++] >> 3) << 11 ) | ((color.rgb[i++] >> 2) << 5 );
                     } else if (bitmap.bitcount == 16) {
-                        *((uint16_t*)(fbp + location)) = *(uint16_t *)(&buffer[i]);
+                        *((uint16_t*)(fbp + location)) = *(uint16_t *)(&color.rgb[i]);
                     }
                 }
             }
