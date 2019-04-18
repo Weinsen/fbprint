@@ -4,3 +4,5 @@ main
 tests
 tests.c
 fbprint
+bmp2header
+*.bmp
