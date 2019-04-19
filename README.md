@@ -1,25 +1,39 @@
 # FBPrint
 
-Print images directly to the frame buffer.
+Print images directly into the frame buffer. Works on embedded Linux also!
 
 ## Status
 
-	Image is save icon from header.
+	Can print local .bmp files into framebuffer, as well some preconfigured icons.
+
+	Expand the icon library by using the bmp2header utility.
 
 ## ToDo
 
+### fbprint
+
 	Fully support 16 and 32 bpp frame buffers.
 
-	Read bmp;
-
 	Read gif;
+
+### bmp2header
+
+	Install new icon directly into icon.h;
+
+	Header preview;
 
 ## Compilation
 
 Compile using:
 
 ```
-make
+$ make
+```
+
+Use example:
+
+```
+$ ./fbprint -x 200 -y 200 -i save_logo -c F0F0F0
 ```
 
 To run, use the tty1 (Ctrl + Alt + F1 on most Linux).
@@ -30,9 +44,9 @@ To run, use the tty1 (Ctrl + Alt + F1 on most Linux).
 
 **Option** | **Value** | **Description**
 --- | --- | ---
--c | unsigned char | Color applied to icons
--x | integer | X position on screen of left-top corner of image
--y | integer | Y position on screen of left-top corner of image
+-c | uint32_t | Color applied to icons
+-x | int32_t | X position on screen of left-top corner of image
+-y | int32_t | Y position on screen of left-top corner of image
 -f | Bitmap file | Path to bitmap file
 --icon | String | Name of icon to use
 
@@ -50,3 +64,8 @@ Generate a header file containing the converted image. Copy and paste the conten
 ```
 $ make bmp2header
 ```
+## Knows Issues
+
+Image mode may result in segmentation fault in some cases;
+
+Arguments are not completely checked before run;

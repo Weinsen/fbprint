@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     struct fb_var_screeninfo vinfo;
     struct fb_fix_screeninfo finfo;
 
-    int x = 0, y = 0;
+    int32_t x = 0, y = 0;
     uint32_t i = 0;
 
     uint8_t header[200];
@@ -108,20 +108,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    // printf("%dx%d, %dbpp\n", vinfo.xres, vinfo.yres, vinfo.bits_per_pixel);
-
-    // Save current fb slice on memory
-    // unsigned int mem[200][200];
-    // for (y = 0; y < window.height; y++) {
-    //     for (x = 0; x < window.width; x++) {
-    //         location = (x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
-    //                    (y+vinfo.yoffset+window.y) * finfo.line_length;
-    //         mem[x][y] = *((unsigned int *)(fbp + location)) & 0xFFFFFFFF;
-    //     }
-    // }
-    //
-    //
-
     if (options.icon) {
 
         uint32_t index = 0;
@@ -157,10 +143,10 @@ int main(int argc, char *argv[])
                     } else {
                         if (options.border) {
                             if (IS_BORDER) {
-                                *(uint16_t *)(fbp + location) = color.pixel;
+                                *(uint16_t *)(fbp + location) = color.pix16;
                             }
                         } else {
-                            *(uint16_t *)(fbp + location) = color.pixel;
+                            *(uint16_t *)(fbp + location) = color.pix16;
                         }
                     }
                 }
