@@ -6,3 +6,6 @@ tests.c
 fbprint
 bmp2header
 *.bmp
+CMakeFiles/
+cmake_install*
+CMakeCache.txt

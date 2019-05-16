@@ -8,6 +8,8 @@ Print images directly into the frame buffer. Works on embedded Linux also!
 
 	Expand the icon library by using the bmp2header utility.
 
+	CMake compatible.
+
 ## ToDo
 
 ### fbprint

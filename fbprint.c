@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
     option_t options = {
         .invert = 0,
         .border = 0,
-        .icon = 0
+        .icon = 1
     };
 
     bitmap_t bitmap;
@@ -80,8 +80,7 @@ int main(int argc, char *argv[])
         if(!strcmp(argv[i], "-c")) {
             color.pixel = (uint32_t)strtol(argv[++i], NULL, 16);
             if (vinfo.bits_per_pixel == 16) {
-                x=1;
-                color.pix16[0] = ((color.rgb[x++] >> 3) << 0 ) | ((color.rgb[x++] >> 3) << 11 ) | ((color.rgb[x++] >> 2) << 5 );
+                color.pix16[0] = ((color.rgb[2] >> 3) << 0 ) | ((color.rgb[0] >> 3) << 11 ) | ((color.rgb[1] >> 2) << 5 );
             }
         } else if(!strcmp(argv[i], "-x")) {
             window.x = atoi(argv[++i]);
@@ -93,6 +92,7 @@ int main(int argc, char *argv[])
             options.border = 1;
         } else if(!strcmp(argv[i], "-f") ) {
             strcpy(header, argv[++i]);
+            options.icon = 0;
         } else if(!strcmp(argv[i], "-i")) {
             // strcpy(header, argv[++i]);
             i++;
@@ -143,10 +143,10 @@ int main(int argc, char *argv[])
                     } else {
                         if (options.border) {
                             if (IS_BORDER) {
-                                *(uint16_t *)(fbp + location) = color.pix16;
+                                *(uint16_t *)(fbp + location) = color.pix16[0];
                             }
                         } else {
-                            *(uint16_t *)(fbp + location) = color.pix16;
+                            *(uint16_t *)(fbp + location) = color.pix16[0];
                         }
                     }
                 }
