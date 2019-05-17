@@ -199,7 +199,12 @@ int main(int argc, char *argv[])
                         *(fbp + location + 0) = ((*(uint16_t *)(&color.rgb[i])) & 0x001F) << 3;   // Blue
                         *(fbp + location + 1) = ((*(uint16_t *)(&color.rgb[i])) & 0x07E0) >> 3;   // Red
                         *(fbp + location + 2) = ((*(uint16_t *)(&color.rgb[i])) & 0xF800) >> 8;   // Green
-                        *(fbp + location + 3) = 0x00;   // Green
+                        *(fbp + location + 3) = 0x00;   
+                    } else if (bitmap.bitcount == 8) {
+                        *(fbp + location + 0) = color.rgb[i];   // Blue
+                        *(fbp + location + 1) = color.rgb[i];   // Red
+                        *(fbp + location + 2) = color.rgb[i];   // Green
+                        *(fbp + location + 3) = 0x00;   
                     }
 
                 }
@@ -227,6 +232,8 @@ int main(int argc, char *argv[])
                         *((uint16_t*)(fbp + location)) = ((color.rgb[i++] >> 3) << 0 ) | ((color.rgb[i++] >> 3) << 11 ) | ((color.rgb[i++] >> 2) << 5 );
                     } else if (bitmap.bitcount == 16) {
                         *((uint16_t*)(fbp + location)) = *(uint16_t *)(&color.rgb[i]);
+                    } else if (bitmap.bitcount == 8) {
+                        *((uint16_t*)(fbp + location)) = ((color.rgb[i] >> 3) << 0 ) | ((color.rgb[i] >> 3) << 11 ) | ((color.rgb[i] >> 2) << 5 );
                     }
                 }
             }

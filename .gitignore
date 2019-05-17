@@ -9,3 +9,4 @@ bmp2header
 CMakeFiles/
 cmake_install*
 CMakeCache.txt
+install_manifest.txt
