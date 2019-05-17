@@ -8,6 +8,7 @@
 #include <sys/ioctl.h>
 #include <stdint.h>
 #include "icon.h"
+#include "font.h"
 #include "bitmap.h"
 #include "fbprint.h"
 #include <string.h>
@@ -15,7 +16,17 @@
 icon_t icon_list[] = {
     INCLUDE_ICON(save_logo),
     INCLUDE_ICON(ethernet),
-    INCLUDE_ICON(nfc_logo)
+    INCLUDE_ICON(nfc_logo),
+    INCLUDE_ICON(font_0),
+    INCLUDE_ICON(font_1),
+    INCLUDE_ICON(font_2),
+    INCLUDE_ICON(font_3),
+    INCLUDE_ICON(font_4),
+    INCLUDE_ICON(font_5),
+    INCLUDE_ICON(font_6),
+    INCLUDE_ICON(font_7),
+    INCLUDE_ICON(font_8),
+    INCLUDE_ICON(font_9)
 };
 
 int main(int argc, char *argv[])
@@ -199,12 +210,12 @@ int main(int argc, char *argv[])
                         *(fbp + location + 0) = ((*(uint16_t *)(&color.rgb[i])) & 0x001F) << 3;   // Blue
                         *(fbp + location + 1) = ((*(uint16_t *)(&color.rgb[i])) & 0x07E0) >> 3;   // Red
                         *(fbp + location + 2) = ((*(uint16_t *)(&color.rgb[i])) & 0xF800) >> 8;   // Green
-                        *(fbp + location + 3) = 0x00;   
+                        *(fbp + location + 3) = 0x00;
                     } else if (bitmap.bitcount == 8) {
                         *(fbp + location + 0) = color.rgb[i];   // Blue
                         *(fbp + location + 1) = color.rgb[i];   // Red
                         *(fbp + location + 2) = color.rgb[i];   // Green
-                        *(fbp + location + 3) = 0x00;   
+                        *(fbp + location + 3) = 0x00;
                     }
 
                 }

@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     uint8_t header[200];
     uint8_t buffer[4];
 
-    uint32_t threshhold = 300;
+    uint32_t threshhold = 64;
 
     bitmap_t bitmap;
     // printf("The framebuffer device was mapped to memory successfully.\n");
