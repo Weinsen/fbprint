@@ -14,9 +14,11 @@
 #include <string.h>
 
 icon_t icon_list[] = {
-    INCLUDE_ICON(save_logo),
-    INCLUDE_ICON(ethernet),
-    INCLUDE_ICON(nfc_logo),
+    INCLUDE_ICON(cog),
+    INCLUDE_ICON(connection),
+    INCLUDE_ICON(linux_icon),
+    INCLUDE_ICON(nfc_icon),
+    INCLUDE_ICON(save_icon),
     INCLUDE_ICON(font_0),
     INCLUDE_ICON(font_1),
     INCLUDE_ICON(font_2),
@@ -39,7 +41,7 @@ int main(int argc, char *argv[])
 
     uint8_t header[200];
 
-    const uint8_t *icon_image = save_logo;
+    const uint8_t *icon_image = save_icon;
 
     color_t color;
     option_t options = {

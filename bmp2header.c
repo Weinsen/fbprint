@@ -17,6 +17,7 @@ int main(int argc, char *argv[])
     uint32_t color = 0;
 
     uint8_t header[200];
+    uint8_t filename[200];
     uint8_t buffer[4];
 
     uint32_t threshhold = 64;
@@ -29,17 +30,22 @@ int main(int argc, char *argv[])
         if(!strcmp(argv[i], "-t")) {
             threshhold = atoi(argv[++i]);
         } else {
-            strcpy(header, argv[i]);
+            strcpy(filename, argv[i]);
         }
     }
 
-    if(strstr(header, ".bmp") == NULL) {
+    if(strstr(filename, ".bmp") == NULL) {
         printf("File must be 24bpp bmp!\n");
         exit(1);
     }
 
-    FILE *img = fopen(header, "rb");
-    FILE *head = fopen("output.h", "w");
+    memset(header, 0, sizeof(header));
+    memcpy(header, filename, strstr(filename, ".bmp") - (char *)filename);
+
+    FILE *img = fopen(filename, "rb");
+    strcpy(filename, header);
+
+    FILE *head = fopen("output.h", "a");
     fread(header, 0x34, 1, img);
     get_bitmap_info(header, &bitmap);
 
@@ -52,8 +58,9 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    fputs("const uint8_t IMG[] = {\r\n", head);
-    sprintf(header, "\t0x%02x, 0x%02x, 0x%02x, 0x%02x,", (bitmap.height >> 8) & 0xFF, bitmap.height & 0xFF, (bitmap.width >> 8) & 0xFF, bitmap.width & 0xFF);
+    sprintf(header, "const uint8_t %s[] = {\r\n", filename);
+    fputs(header, head);
+    sprintf(header, "\t0x%02x, 0x%02x, 0x%02x, 0x%02x", (bitmap.height >> 8) & 0xFF, bitmap.height & 0xFF, (bitmap.width >> 8) & 0xFF, bitmap.width & 0xFF);
     fputs(header, head);
 
     uint8_t out[bitmap.width][bitmap.height/8];
@@ -86,14 +93,16 @@ int main(int argc, char *argv[])
     }
 
     for (x = 0; x < bitmap.width; x++) {
-        fputs("\r\n\t", head);
-        for (y = 0; y < bitmap.height/8; y++) {
-            sprintf(header, "0x%02x, ", out[x][y]);
+        fputs(",\r\n\t", head);
+        sprintf(header, "0x%02x", out[x][y]);
+        fputs(header, head);
+        for (y = 1; y < bitmap.height/8; y++) {
+            sprintf(header, ", 0x%02x", out[x][y]);
             fputs(header, head);
         }
     }
 
-    fputs("\b\b \r\n};\r\n", head);
+    fputs("\r\n};\r\n\r\n", head);
 
     fclose(img);
     fclose(head);
