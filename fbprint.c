@@ -41,21 +41,21 @@ int main(int argc, char *argv[])
 
     uint8_t header[200];
 
-    const uint8_t *icon_image = save_icon;
+    const uint8_t *icon_image = NULL;
 
     color_t color;
     option_t options = {
         .invert = 0,
         .border = 0,
-        .icon = 1
+        .mode = FB_ICON
     };
 
     bitmap_t bitmap;
     window_t window = {
         .x = 0,
         .y = 0,
-        .width = 64,
-        .height = 64
+        .width = 48,
+        .height = 48
     };
 
     // Open the file for reading and writing
@@ -103,27 +103,41 @@ int main(int argc, char *argv[])
             options.invert = 1;
         } else if(!strcmp(argv[i], "-B")) {
             options.border = 1;
+        } else if(!strcmp(argv[i], "-F") ) {
+            options.mode = FB_FILL;
         } else if(!strcmp(argv[i], "-f") ) {
             strcpy(header, argv[++i]);
-            options.icon = 0;
+            options.mode = FB_IMAGE;
         } else if(!strcmp(argv[i], "-i")) {
             // strcpy(header, argv[++i]);
-            i++;
-            for (x=0; x<(sizeof(icon_list)/sizeof(icon_t)); x++) {
-                if (!strcmp(argv[i], icon_list[x].name)) {
-                    icon_image = icon_list[x].img;
-                    break;
+            if(++i < argc) {
+                for (x=0; x<(sizeof(icon_list)/sizeof(icon_t)); x++) {
+                    if (!strcmp(argv[i], icon_list[x].name)) {
+                        icon_image = icon_list[x].img;
+                        break;
+                    }
                 }
+                options.mode = FB_ICON;
+            } else {
+                printf("Invalid parameters!\n");
+                exit(5);
             }
-            options.icon = 1;
         } else if(!strcmp(argv[i], "-v")) {
             printf("Version: %s\r\n", FBP_VERSION);
         }
     }
 
-    if (options.icon) {
+    if (options.mode == FB_ICON) {
 
         uint32_t index = 0;
+
+        if(!icon_image) {
+            printf("Icon not selected! Available options:\r\n");
+            for(index=0; index<(sizeof(icon_list) / sizeof(icon_t)); index++) {
+                printf("\t- %s\r\n", icon_list[index].name);
+            }
+            exit(5);
+        }
 
         window.height = (icon_image[index++] << 8) | icon_image[index++];
         window.width = (icon_image[index++] << 8) | icon_image[index++];
@@ -167,7 +181,7 @@ int main(int argc, char *argv[])
             }
         }
 
-    } else {
+    } else if (options.mode == FB_IMAGE) {
 
         FILE *img = fopen(header, "rb");
         fread(header, 0x34, 1, img);
@@ -224,6 +238,7 @@ int main(int argc, char *argv[])
             }
 
         } else {
+
             for (y = window.height-1; y >= 0 ; y--) {
 
                 CHECK_Y_BONDARIES;
@@ -253,6 +268,40 @@ int main(int argc, char *argv[])
         }
 
         fclose(img);
+
+    } else {
+
+        window.height = vinfo.yres;
+        window.width = vinfo.xres;
+        window.x = 0;
+        window.y = 0;
+
+        x = 0;
+        y = 0;
+        i = 0;
+
+        long int location = 0;
+        long int step = (vinfo.bits_per_pixel/8);
+
+        for (y = 0; y < window.height; y++) {
+
+            // CHECK_Y_BONDARIES;
+
+            for (x = 0; x < window.width; x++) {
+
+                location = (x+vinfo.xoffset) * (vinfo.bits_per_pixel/8) +
+                           (y+vinfo.yoffset) * finfo.line_length;
+
+                // CHECK_X_BONDARIES;
+
+                if (vinfo.bits_per_pixel == 32) {
+                    *(uint32_t *)(fbp + location) = color.pixel;
+                } else {
+                    *(uint16_t *)(fbp + location) = color.pix16[0];
+                }
+
+            }
+        }
 
     }
 

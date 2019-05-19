@@ -34,15 +34,17 @@ int main(int argc, char *argv[])
         }
     }
 
-    if(strstr(filename, ".bmp") == NULL) {
+    char *ptr = strstr(filename, ".bmp");
+    if(ptr == NULL) {
         printf("File must be 24bpp bmp!\n");
         exit(1);
     }
 
-    memset(header, 0, sizeof(header));
-    memcpy(header, filename, strstr(filename, ".bmp") - (char *)filename);
 
     FILE *img = fopen(filename, "rb");
+
+    memset(header, 0, sizeof(header));
+    memcpy(header, filename, ptr - (char *)filename);
     strcpy(filename, header);
 
     FILE *head = fopen("output.h", "a");
@@ -57,6 +59,8 @@ int main(int argc, char *argv[])
         printf("File must be 24bpp bmp!\n");
         exit(1);
     }
+
+    printf("Converting: %s\n", filename);
 
     sprintf(header, "const uint8_t %s[] = {\r\n", filename);
     fputs(header, head);
@@ -94,11 +98,14 @@ int main(int argc, char *argv[])
 
     for (x = 0; x < bitmap.width; x++) {
         fputs(",\r\n\t", head);
-        sprintf(header, "0x%02x", out[x][y]);
-        fputs(header, head);
-        for (y = 1; y < bitmap.height/8; y++) {
-            sprintf(header, ", 0x%02x", out[x][y]);
-            fputs(header, head);
+        for (y = 0; y < bitmap.height/8; y++) {
+            if(!y) {
+                sprintf(header, "0x%02x", out[x][y]);
+                fputs(header, head);
+            } else {
+                sprintf(header, ", 0x%02x", out[x][y]);
+                fputs(header, head);
+            }
         }
     }
 
