@@ -1,10 +1,14 @@
 # FBPrint
 
-Print images directly into the frame buffer. Works on embedded Linux also!
+	Print images directly into the frame buffer. Works on embedded Linux!
 
 ## Status
 
 	Can print local .bmp files into framebuffer, as well some preconfigured icons.
+
+	Print a text anywhere on the screen.
+
+	Pick a RGB color to your icon or text.
 
 	Expand the icon library by using the bmp2header utility.
 
@@ -37,13 +41,14 @@ To run, use the tty1 (Ctrl + Alt + F1 on most Linux).
 
 ## Options
 
-**Option** | **Value** | **Description**
---- | --- | ---
--c | uint32_t | Color applied to icons
--f | Bitmap file | Path to bitmap file
--i | String | Name of icon to use
--x | int32_t | X position on screen of left-top corner of image
--y | int32_t | Y position on screen of left-top corner of image
+**Option** | **Value** | **Description** | **Example**
+--- | --- | --- | ---
+-c | uint32_t | Color applied to icons | FFED08
+-f | Bitmap file | Path to bitmap file | image.bmp
+-i | String | Name of icon to use | save_icon
+-t | String | Text to be written | "Test text"
+-x | int32_t | X position on screen of left-top corner of image | 90
+-y | int32_t | Y position on screen of left-top corner of image | 90
 
 **Flags** | **Description**
 --- | ---
@@ -57,6 +62,16 @@ To run, use the tty1 (Ctrl + Alt + F1 on most Linux).
 
 Generate a header file containing the converted image. Copy and paste the contents of output.h to your header.
 
+## Log
+
+### v0.2.8
+
+	* Added text support, relies on premade font (-t [TEXT])
+
+### v0.2.7
+
+	* Screen fill flag (-F)
+
 ## ToDo
 
 ### fbprint
@@ -64,6 +79,10 @@ Generate a header file containing the converted image. Copy and paste the conten
 	Fully support 16 and 32 bpp frame buffers.
 
 	Read gif;
+
+	Automatic tool to read bmps on folder and generated custom header files;
+
+	Support system TrueType fonts;
 
 ### bmp2header
 
