@@ -1,7 +1,7 @@
 #ifndef fbprint_h
 #define fbprint_h
 
-#define FBP_VERSION "0.2.7"
+#define FBP_VERSION "0.2.8"
 
 #define CHECK_X_BONDARIES if (x + window.x >= vinfo.xres || x + window.x < 0) { continue; }
 #define CHECK_Y_BONDARIES if (y + window.y >= vinfo.yres || y + window.y < 0) { continue; }
@@ -13,6 +13,7 @@
 enum {
     FB_IMAGE = 0,
     FB_ICON,
+    FB_TEXT,
     FB_FILL
 };
 
