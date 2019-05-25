@@ -6,3 +6,4 @@ cmake_install*
 CMakeCache.txt
 install_manifest.txt
 imagens/*
+icons/*

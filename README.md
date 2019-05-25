@@ -35,7 +35,10 @@ $ fbprint -x 200 -y 200 -f image.bmp
 $ fbprint -F -c FF00FF
 ```
 
-To run, use the tty1 (Ctrl + Alt + F1 on most Linux).
+To run, use the tty1 (Ctrl + Alt + F1 on most Linux), or from a terminal, enter:
+```
+$ sudo chvt 1
+```
 
 *Will not work on Gnome Terminal*
 
@@ -68,21 +71,31 @@ Generate a header file containing the converted image. Copy and paste the conten
 
 	* Added text support, relies on premade font (-t [TEXT])
 
+	* Convertion of bitmaps in the icons folder on compile time
+
 ### v0.2.7
 
 	* Screen fill flag (-F)
 
-## ToDo
+## Roadmap
 
 ### fbprint
 
-	Fully support 16 and 32 bpp frame buffers.
+	Fully support 16 and 32 bpp frame buffers;
+
+	Support alpha channel;
+
+	Support PNG;
 
 	Read gif;
+
+	Print rotation;
 
 	Automatic tool to read bmps on folder and generated custom header files;
 
 	Support system TrueType fonts;
+
+	Selectable features on compile time;
 
 ### bmp2header
 
