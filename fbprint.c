@@ -28,10 +28,11 @@ int main(int argc, char *argv[])
     option_t options = {
         .invert = 0,
         .border = 0,
+        .rotation = 0,
         #ifdef FB_ICON_SET
-        .mode = FB_ICON
+            .mode = FB_ICON
         #else
-        .mode = FB_IMAGE
+            .mode = FB_IMAGE
         #endif
     };
 
@@ -86,6 +87,9 @@ int main(int argc, char *argv[])
         } else if(!strcmp(argv[i], "-y")) {
             if(++i>=argc) exit(5);
             window.y = atoi(argv[i]);
+        } else if(!strcmp(argv[i], "-r")) {
+            if(++i>=argc) exit(5);
+            options.rotation = atoi(argv[i]);
         } else if(!strcmp(argv[i], "-I")) {
             options.invert = 1;
         } else if(!strcmp(argv[i], "-B")) {
@@ -196,8 +200,54 @@ int main(int argc, char *argv[])
 
             for (y = 0; y < window.height; y++) {
 
-                location = (x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
-                           (y+vinfo.yoffset+window.y) * finfo.line_length;
+                switch (options.rotation) {
+
+                    case 0:
+                        location =  (x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
+                                    (y+vinfo.yoffset+window.y) * finfo.line_length;
+                        break;
+
+                    case 1:
+                        location =  (y+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
+                                    (window.height-x+vinfo.yoffset+window.y) * finfo.line_length;
+                        break;
+
+                    case 2:
+                        location =  (window.width-x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
+                                    (window.height-y+vinfo.yoffset+window.y) * finfo.line_length;
+                        break;
+
+                    case 3:
+                        location =  (window.width-y+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
+                                    (x+vinfo.yoffset+window.y) * finfo.line_length;
+                        break;
+
+                    case 4:
+                        location =  (x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
+                                    (window.height-y+vinfo.yoffset+window.y) * finfo.line_length;
+                        break;
+
+                    case 5:
+                        location =  (y+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
+                                    (x+vinfo.yoffset+window.y) * finfo.line_length;
+                        break;
+
+                    case 6:
+                        location =  (window.width-x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
+                                    (y+vinfo.yoffset+window.y) * finfo.line_length;
+                        break;
+
+                    case 7:
+                        location =  (window.width-y+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
+                                    (window.height-x+vinfo.yoffset+window.y) * finfo.line_length;
+                        break;
+
+                    default:
+                        location =  (x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
+                                    (y+vinfo.yoffset+window.y) * finfo.line_length;
+                        break;
+
+                }
 
                 CHECK_Y_BONDARIES;
 
@@ -223,6 +273,51 @@ int main(int argc, char *argv[])
             }
         }
     #endif
+
+    } else if (options.mode == FB_TEXT) {
+
+        uint8_t** font = Consolas_16;
+        uint16_t text = 0;
+
+        while(header[text]) {
+
+            icon_image = font[header[text] - 'A'];
+            // printf("C:%c I:%d", header[text], header[text] - 'A');
+
+            uint32_t index = 0;
+
+            window.height = (icon_image[index++] << 8) | icon_image[index++];
+            window.width = (icon_image[index++] << 8) | icon_image[index++];
+
+            i = 0;
+
+            long int location = 0;
+
+            for (x = 0; x < window.width; x++) {
+
+                CHECK_X_BONDARIES;
+
+                for (y = 0; y < window.height; y++) {
+
+                    location = (x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
+                               (y+vinfo.yoffset+window.y) * finfo.line_length;
+
+                    CHECK_Y_BONDARIES;
+
+                    if ( (icon_image[y/8 + (window.height/8)*x + index] & 1<<(y%8)) > 0 ^ options.invert ) {
+                        if (vinfo.bits_per_pixel == 32) {
+                            *(uint32_t *)(fbp + location) = color.pixel;
+                        } else {
+                            *(uint16_t *)(fbp + location) = color.pix16[0];
+                        }
+                    }
+                    i++;
+                }
+            }
+
+            window.x += window.width;
+            text++;
+        }
 
     } else if (options.mode == FB_IMAGE) {
 

@@ -71,7 +71,7 @@ Generate a header file containing the converted image. Copy and paste the conten
 
 	* Added text support, relies on premade font (-t [TEXT])
 
-	* Convertion of bitmaps in the icons folder on compile time
+	* Added 90 degrees rotation and mirror for icons
 
 ### v0.2.7
 

@@ -12,7 +12,7 @@ icon_t icon_list[] = {
 	INCLUDE_ICON(connection),
 	INCLUDE_ICON(connection_0),
 	INCLUDE_ICON(connection_1),
-	INCLUDE_ICON(connection_2),
+	INCLUDE_ICON(connection_2)
 };
 
 #endif
