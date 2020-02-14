@@ -1,8 +1,14 @@
 fbprint
 bmp2header
+
 *.bmp
-CMakeFiles/
+icons/*.bmp
+
+CMakeFiles/*
 cmake_install*
 CMakeCache.txt
+Makefile
 install_manifest.txt
-imagens/*
+
+build
+build/*

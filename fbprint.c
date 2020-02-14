@@ -39,6 +39,7 @@ int main(int argc, char *argv[])
     option_t options = {
         .invert = 0,
         .border = 0,
+        .rotation = 0,
         .mode = FB_ICON
     };
 
@@ -91,6 +92,8 @@ int main(int argc, char *argv[])
             window.x = atoi(argv[++i]);
         } else if(!strcmp(argv[i], "-y")) {
             window.y = atoi(argv[++i]);
+        } else if(!strcmp(argv[i], "-r")) {
+            options.rotation = atoi(argv[++i]);
         } else if(!strcmp(argv[i], "-I")) {
             options.invert = 1;
         } else if(!strcmp(argv[i], "-B")) {
@@ -149,8 +152,54 @@ int main(int argc, char *argv[])
 
             for (y = 0; y < window.height; y++) {
 
-                location = (x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
-                           (y+vinfo.yoffset+window.y) * finfo.line_length;
+                switch (options.rotation) {
+
+                    case 0:
+                        location =  (x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
+                                    (y+vinfo.yoffset+window.y) * finfo.line_length;
+                        break;
+
+                    case 1:
+                        location =  (y+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
+                                    (window.height-x+vinfo.yoffset+window.y) * finfo.line_length;
+                        break;
+
+                    case 2:
+                        location =  (window.width-x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
+                                    (window.height-y+vinfo.yoffset+window.y) * finfo.line_length;
+                        break;
+
+                    case 3:
+                        location =  (window.width-y+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
+                                    (x+vinfo.yoffset+window.y) * finfo.line_length;
+                        break;
+
+                    case 4:
+                        location =  (x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
+                                    (window.height-y+vinfo.yoffset+window.y) * finfo.line_length;
+                        break;
+
+                    case 5:
+                        location =  (y+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
+                                    (x+vinfo.yoffset+window.y) * finfo.line_length;
+                        break;
+
+                    case 6:
+                        location =  (window.width-x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
+                                    (y+vinfo.yoffset+window.y) * finfo.line_length;
+                        break;
+
+                    case 7:
+                        location =  (window.width-y+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
+                                    (window.height-x+vinfo.yoffset+window.y) * finfo.line_length;
+                        break;
+
+                    default:
+                        location =  (x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
+                                    (y+vinfo.yoffset+window.y) * finfo.line_length;
+                        break;
+
+                }
 
                 CHECK_Y_BONDARIES;
 
