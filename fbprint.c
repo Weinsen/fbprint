@@ -233,7 +233,7 @@ int main(int argc, char *argv[])
         while(header[text]) {
 
             icon_image = font[header[text] - 'A'];
-            printf("C:%c I:%d", header[text], header[text] - 'A');
+            // printf("C:%c I:%d", header[text], header[text] - 'A');
 
             uint32_t index = 0;
 
