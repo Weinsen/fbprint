@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/antonio/projetos/testes/fbprint
+CMAKE_SOURCE_DIR = /home/antonio/Projects/Self/fbprint
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/antonio/projetos/testes/fbprint
+CMAKE_BINARY_DIR = /home/antonio/Projects/Self/fbprint
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -100,17 +100,6 @@ list_install_components/fast: list_install_components
 
 .PHONY : list_install_components/fast
 
-# Special rule for the target install/strip
-install/strip: preinstall
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
-	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
-.PHONY : install/strip
-
-# Special rule for the target install/strip
-install/strip/fast: install/strip
-
-.PHONY : install/strip/fast
-
 # Special rule for the target install/local
 install/local: preinstall
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
@@ -122,11 +111,22 @@ install/local/fast: install/local
 
 .PHONY : install/local/fast
 
+# Special rule for the target install/strip
+install/strip: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
+	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip
+
+# Special rule for the target install/strip
+install/strip/fast: install/strip
+
+.PHONY : install/strip/fast
+
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/antonio/projetos/testes/fbprint/CMakeFiles /home/antonio/projetos/testes/fbprint/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/antonio/Projects/Self/fbprint/CMakeFiles /home/antonio/Projects/Self/fbprint/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/antonio/projetos/testes/fbprint/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/antonio/Projects/Self/fbprint/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -153,6 +153,19 @@ preinstall/fast:
 depend:
 	$(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
+
+#=============================================================================
+# Target rules for targets named ICONS
+
+# Build rule for target.
+ICONS: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 ICONS
+.PHONY : ICONS
+
+# fast build rule for target.
+ICONS/fast:
+	$(MAKE) -f CMakeFiles/ICONS.dir/build.make CMakeFiles/ICONS.dir/build
+.PHONY : ICONS/fast
 
 #=============================================================================
 # Target rules for targets named bmp2header
@@ -272,12 +285,13 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
+	@echo "... ICONS"
 	@echo "... install"
 	@echo "... list_install_components"
 	@echo "... bmp2header"
+	@echo "... install/local"
 	@echo "... fbprint"
 	@echo "... install/strip"
-	@echo "... install/local"
 	@echo "... bitmap.o"
 	@echo "... bitmap.i"
 	@echo "... bitmap.s"
