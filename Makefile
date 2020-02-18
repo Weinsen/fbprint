@@ -111,17 +111,6 @@ install/local/fast: install/local
 
 .PHONY : install/local/fast
 
-# Special rule for the target install/strip
-install/strip: preinstall
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
-	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
-.PHONY : install/strip
-
-# Special rule for the target install/strip
-install/strip/fast: install/strip
-
-.PHONY : install/strip/fast
-
 # The main all target
 all: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/antonio/Projects/Self/fbprint/CMakeFiles /home/antonio/Projects/Self/fbprint/CMakeFiles/progress.marks
@@ -289,9 +278,8 @@ help:
 	@echo "... install"
 	@echo "... list_install_components"
 	@echo "... bmp2header"
-	@echo "... install/local"
 	@echo "... fbprint"
-	@echo "... install/strip"
+	@echo "... install/local"
 	@echo "... bitmap.o"
 	@echo "... bitmap.i"
 	@echo "... bitmap.s"

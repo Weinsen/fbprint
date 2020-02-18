@@ -12,6 +12,8 @@
 #include "bitmap.h"
 #include "fbprint.h"
 
+#include "Consolas_16.h"
+
 int main(int argc, char *argv[])
 {
     struct fb_var_screeninfo vinfo;
@@ -127,7 +129,7 @@ int main(int argc, char *argv[])
 
     if (options.mode == FB_TEXT) {
 
-        uint8_t** font = NULL;
+        uint8_t** font = Consolas_16;
         uint16_t text = 0;
 
         while(header[text]) {
