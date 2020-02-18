@@ -130,12 +130,10 @@ int main(int argc, char *argv[])
         uint8_t** font = NULL;
         uint16_t text = 0;
 
-        exit(1);
-
         while(header[text]) {
 
             icon_image = font[header[text] - 'A'];
-            printf("C:%c I:%d", header[text], header[text] - 'A');
+            // printf("C:%c I:%d", header[text], header[text] - 'A');
 
             uint32_t index = 0;
 
@@ -273,51 +271,6 @@ int main(int argc, char *argv[])
             }
         }
     #endif
-
-    } else if (options.mode == FB_TEXT) {
-
-        uint8_t** font = Consolas_16;
-        uint16_t text = 0;
-
-        while(header[text]) {
-
-            icon_image = font[header[text] - 'A'];
-            // printf("C:%c I:%d", header[text], header[text] - 'A');
-
-            uint32_t index = 0;
-
-            window.height = (icon_image[index++] << 8) | icon_image[index++];
-            window.width = (icon_image[index++] << 8) | icon_image[index++];
-
-            i = 0;
-
-            long int location = 0;
-
-            for (x = 0; x < window.width; x++) {
-
-                CHECK_X_BONDARIES;
-
-                for (y = 0; y < window.height; y++) {
-
-                    location = (x+vinfo.xoffset+window.x) * (vinfo.bits_per_pixel/8) +
-                               (y+vinfo.yoffset+window.y) * finfo.line_length;
-
-                    CHECK_Y_BONDARIES;
-
-                    if ( (icon_image[y/8 + (window.height/8)*x + index] & 1<<(y%8)) > 0 ^ options.invert ) {
-                        if (vinfo.bits_per_pixel == 32) {
-                            *(uint32_t *)(fbp + location) = color.pixel;
-                        } else {
-                            *(uint16_t *)(fbp + location) = color.pix16[0];
-                        }
-                    }
-                    i++;
-                }
-            }
-
-            window.x += window.width;
-            text++;
-        }
 
     } else if (options.mode == FB_IMAGE) {
 
