@@ -26,10 +26,11 @@ int main(int argc, char *argv[])
 
     const uint8_t *icon_image = NULL;
 
-    color_t color;
+    color_t color, background;
     option_t options = {
         .invert = 0,
         .border = 0,
+        .background = 0,
         .rotation = 0,
         #ifdef FB_ICON_SET
             .mode = FB_ICON
@@ -98,6 +99,13 @@ int main(int argc, char *argv[])
             options.border = 1;
         } else if(!strcmp(argv[i], "-F") ) {
             options.mode = FB_FILL;
+        } else if(!strcmp(argv[i], "-bg")) {
+            options.background = 1;
+            if(++i>=argc) exit(5);
+            background.pixel = (uint32_t)strtol(argv[++i], NULL, 16);
+            if (vinfo.bits_per_pixel == 16) {
+                background.pix16[0] = ((background.rgb[0] >> 3) << 0 ) | ((background.rgb[2] >> 3) << 11 ) | ((background.rgb[1] >> 2) << 5 );
+            }
         } else if(!strcmp(argv[i], "-f") ) {
             if(++i>=argc) exit(5);
             strcpy(header, argv[i]);
@@ -256,6 +264,8 @@ int main(int argc, char *argv[])
                         if (options.border) {
                             if (IS_BORDER)
                                 *(uint32_t *)(fbp + location) = color.pixel;
+                            else if (options.background)
+                                *(uint32_t *)(fbp + location) = background.pixel;
                         } else {
                             *(uint32_t *)(fbp + location) = color.pixel;
                         }

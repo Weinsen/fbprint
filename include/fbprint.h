@@ -42,6 +42,7 @@ typedef union color_t {
 typedef struct option_t {
     uint8_t invert;
     uint8_t border;
+    uint8_t background;
     uint8_t mode;
     uint8_t rotation;
 } option_t;
